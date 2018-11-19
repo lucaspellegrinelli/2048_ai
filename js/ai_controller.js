@@ -1,135 +1,263 @@
-let learn = false;
+aiController = new AIController(false, true);
 
-let gameManager = new GameManager(4, KeyboardInputManager, HTMLActuator, LocalStorageManager);
-gameManager.keepPlaying = true;
+function AIController(learn, log){
+	this.log = log;
+	this.learn = learn;
+	this.gameManager = new GameManager(4, KeyboardInputManager, HTMLActuator, LocalStorageManager);
 
-let aiPlaying = false;
+	this.aiPlaying = false;
+	this.refreshInterval;
+	this.refreshDelay = 1;
 
-let refreshInterval;
+	this.preTrainedAI = [
+		new AI(1, 0.35, 0.4, 0.1, 0.08, 0, 0.17)
+	];
 
-function toggleAI(){
-	aiPlaying = !aiPlaying;
+	this.gaConfig = {
+		populationSize: 32,
+		tournamentSize: 4,
+		mutationRate: 0.05
+	};
 
-	if(aiPlaying)
-		letAIPlay();
-	else
-		stopAI();
+	this.ga = new GA(this.gaConfig.populationSize, this.gaConfig.tournamentSize, this.gaConfig.mutationRate);
+
+	this.gaData = {
+		population: this.ga.generateStartPopulation(), // this.ga.generateStartPopulation(preTrainedAI)
+		currentPlayer: 0,
+		currentGeneration: 0,
+		record: {
+			bestGenerationScore: 0,
+			bestGenerationScoreMaxTile: 0,
+			configBestGenerationScore: {
+				priority: 1,
+				adjacentX: -1,
+				adjacentY: -1,
+				maxTile: 0,
+				openTile: 0,
+				average: 0,
+				randomTiles: 0.17
+			},
+			currentGenerationAverage: 0,
+			generationsAverages: []
+		},
+		limits: {
+			lastChosen: -1,
+			repeatCount: 0
+		}
+	};
 }
 
-function stopAI(){
-	if(refreshInterval){
-		clearInterval(refreshInterval);
+AIController.prototype.toggleLearn = function(){
+	this.learn = !this.learn;
+
+	this.pauseAIPlay();
+	this.cleanLog();
+
+	if(this.learn) this.turnOnLearn();
+	else this.turnOffLearn();
+}
+
+AIController.prototype.turnOnLearn = function(){
+	document.getElementById("toggleLearn").innerHTML = "Learning Mode";
+	this.resetGAHistory();
+	this.gameManager.restart();
+}
+
+AIController.prototype.turnOffLearn = function(){
+	document.getElementById("toggleLearn").innerHTML = "Play Mode";
+	this.gameManager.restart();
+}
+
+AIController.prototype.resetGAHistory = function(){
+	this.gaData = {
+		population: this.ga.generateStartPopulation(),
+		currentPlayer: 0,
+		currentGeneration: 0,
+		record: {
+			bestGenerationScore: 0,
+			bestGenerationScoreMaxTile: 0,
+			configBestGenerationScore: {
+				priority: 1,
+				adjacentX: -1,
+				adjacentY: -1,
+				maxTile: 0,
+				openTile: 0,
+				average: 0,
+				randomTiles: 0.17
+			},
+			currentGenerationAverage: 0,
+			generationsAverages: [],
+			bestAllTimeScore: 0,
+			bestAllTimeScoreMaxTile: 0,
+			configBestAllTimeScore: {
+				priority: 1,
+				adjacentX: -1,
+				adjacentY: -1,
+				maxTile: 0,
+				openTile: 0,
+				average: 0,
+				randomTiles: 0.17
+			},
+		},
+		limits: {
+			lastChosen: -1,
+			repeatCount: 0
+		}
+	};
+}
+
+AIController.prototype.toggleAIPlay = function(){
+	this.aiPlaying = !this.aiPlaying;
+
+	if(this.aiPlaying) this.letAIPlay();
+	else this.pauseAIPlay();
+}
+
+AIController.prototype.pauseAIPlay = function(){
+	document.getElementById("toggleAI").innerHTML = "Start AI";
+
+	if(this.refreshInterval){
+		clearInterval(this.refreshInterval);
 	}
 }
 
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+AIController.prototype.cleanLog = function(){
+	document.getElementById("gaProgress").innerHTML = "";
+	document.getElementById("gaTop").innerHTML = "";
+	document.getElementById("gaAllTimeTop").innerHTML = "";
+	document.getElementById("genAvg").innerHTML = "";
 }
 
-let provenAI = [];
+AIController.prototype.letAIPlay = function(){
+	document.getElementById("toggleAI").innerHTML = "Pause AI";
 
-// Over night best mutated
-//provenAI.push(new AI(-0.8711921590439076, 0.39602991479771893, 0.39046268707728027, 0.9813589516515352, 0.7733441697745813, -0.6312702324925917));
+	context = this;
+	this.refreshInterval = setInterval(function(){
+		if(!context.aiPlaying) return;
 
-// THIS BOY MADE 130K
-//provenAI.push(new AI(-0.8711921590439076, 0.2615793667670596, 0.39046268707728027, 1, 0.9357274105521438, -0.6312702324925917));
+		if(context.gameManager.over){
+			if(context.learn){
+				if(context.gameManager.score > context.gaData.record.bestGenerationScore){
+	  			context.gaData.record.bestGenerationScore = context.gameManager.score;
+	  			context.gaData.record.configBestGenerationScore = {
+	  				priority: 	 context.gaData.population[context.gaData.currentPlayer].priorityWeight,
+	  				adjacentX: 	 context.gaData.population[context.gaData.currentPlayer].adjacentXWeight,
+						adjacentY: 	 context.gaData.population[context.gaData.currentPlayer].adjacentYWeight,
+	  				maxTile: 		 context.gaData.population[context.gaData.currentPlayer].maxTileWeight,
+	  				openTile: 	 context.gaData.population[context.gaData.currentPlayer].openTilesWeight,
+	  				average: 		 context.gaData.population[context.gaData.currentPlayer].averageWeight,
+	  				randomTiles: context.gaData.population[context.gaData.currentPlayer].randomTiles
+	  			};
 
-// Test
-provenAI.push(new AI(1, 0.35, 0.4, 0.1, 0.08, 0));
+					let maxTile = 0;
+					for(let i = 0; i < context.gameManager.grid.size; i++){
+						for(let j = 0; j < context.gameManager.grid.size; j++){
+							let thisCell = context.gameManager.grid.cells[i][j];
+							let thisCellValue = thisCell ? thisCell.value : 0;
+							if(thisCellValue > maxTile) maxTile = thisCellValue;
+						}
+					}
 
-let population;
-if(learn){
-	population = generateStartPopulation(provenAI);
-}
+					context.gaData.record.bestGenerationScoreMaxTile = maxTile;
 
-let currentPlayer = 0;
-let currentGeneration = 0;
-
-let bestScoreSoFar = 0;
-let configBestScore = {priority: 1, adjacentX: -1, adjacentY: -1, maxTile: 0, openTile: 0, average: 0, randomTiles: 0.17, priorityMatrix: [[-2,-1,0,1],[-1,0,1,4],[0,1,4,5],[1,4,5,6]]};
-
-let lastChosen = -1;
-let repeatCount = 0;
-
-let generationAverage = 0;
-let genAverages = [];
-
-function letAIPlay(){
-	refreshInterval = setInterval(function(){
-		if(!aiPlaying) return;
-
-		if(gameManager.over){
-			if(learn){
-				if(gameManager.score > bestScoreSoFar){
-		  			bestScoreSoFar = gameManager.score;
-		  			configBestScore = {
-		  				priority: population[currentPlayer].priorityWeight,
-		  				adjacentX: population[currentPlayer].adjacentXWeight,
-							adjacentY: population[currentPlayer].adjacentYWeight,
-		  				maxTile: population[currentPlayer].maxTileWeight,
-		  				openTile: population[currentPlayer].openTilesWeight,
-		  				average: population[currentPlayer].averageWeight,
-		  				randomTiles: population[currentPlayer].randomTiles
+					if(context.gameManager.score > context.gaData.record.bestAllTimeScore){
+						context.gaData.record.bestAllTimeScore = context.gameManager.score;
+						context.gaData.record.bestAllTimeScoreMaxTile = maxTile;
+						context.gaData.record.configBestAllTimeScore = {
+		  				priority: 	 context.gaData.population[context.gaData.currentPlayer].priorityWeight,
+		  				adjacentX: 	 context.gaData.population[context.gaData.currentPlayer].adjacentXWeight,
+							adjacentY: 	 context.gaData.population[context.gaData.currentPlayer].adjacentYWeight,
+		  				maxTile: 		 context.gaData.population[context.gaData.currentPlayer].maxTileWeight,
+		  				openTile: 	 context.gaData.population[context.gaData.currentPlayer].openTilesWeight,
+		  				average: 		 context.gaData.population[context.gaData.currentPlayer].averageWeight,
+		  				randomTiles: context.gaData.population[context.gaData.currentPlayer].randomTiles
 		  			};
-		  		}
+					}
+	  		}
 
-		  		generationAverage += gameManager.score;
+		  	context.gaData.record.generationAverage += context.gameManager.score;
 
-		  		console.log("Individual #" + currentPlayer + " made " + gameManager.score + " points");
-		  		console.log("----------------- // ------------------");
-
-				gameManager.restart();
-
-				currentPlayer++;
-
-				if(currentPlayer >= population.length){
-					currentPlayer = 0;
-					currentGeneration++;
-					population = generateNewGeneration(population);
-
-					console.log("GENERATION AVERAGE = " + (generationAverage / population.length));
-					genAverages.push((generationAverage / population.length));
-					console.log(genAverages);
-					generationAverage = 0;
-
-					bestScoreSoFar = 0;
-					configBestScore = {priority: 1, adjacent: -1, maxTile: 0, openTile: 0, average: 0, randomTiles: 0.17, priorityMatrix: [[-2,-1,0,1],[-1,0,1,4],[0,1,4,5],[1,4,5,6]]};
+				if(context.log){
+					document.getElementById("gaProgress").innerHTML = "Individual <b>#" + context.gaData.currentPlayer + "/" + context.gaConfig.populationSize +
+						"</b> [Generation <b>#" + context.gaData.currentGeneration + "</b>] got <b>" + context.gameManager.score + " pts</b> and the <b>" + context.gaData.record.bestGenerationScoreMaxTile + " tile</b>";
 				}
 
-				console.log("Individual #" + currentPlayer + ", Generation #" + currentGeneration);
-				console.log("Best Individual in Generation (" + bestScoreSoFar + "):");
-				console.log(configBestScore);
-				//var code = [];
-				//code.push("provenAI.push(new AI(" + configBestScore.priority + "," + configBestScore.adjacent + "," + configBestScore.maxTile + "," + configBestScore.openTile + "," + configBestScore.average + "," + configBestScore.randomTiles + "));");
-				//console.log(code);
-				repeatCount = 0;
-				lastChosen = -1;
+				console.log("Individual #" + context.gaData.currentPlayer + "/" + context.gaConfig.populationSize + " [Generation #" + context.gaData.currentGeneration + "] got " + context.gameManager.score + " pts and the " + context.gaData.record.bestGenerationScoreMaxTile + " tile");
+
+				context.gameManager.restart();
+
+				context.gaData.currentPlayer++;
+
+				if(context.gaData.currentPlayer >= context.gaData.population.length){
+					context.gaData.currentPlayer = 0;
+					context.gaData.currentGeneration++;
+					context.gaData.population = context.ga.generateNewGeneration(context.gaData.population);
+
+					let averageScore = context.gaData.record.currentGenerationAverage / context.gaData.population.length;
+
+					context.gaData.record.generationsAverages.push(averageScore);
+
+					if(context.log){
+						document.getElementById("genAvg").innerHTML = "Last generation (<b>#" + (context.gaData.currentGeneration - 1) + "</b>) had an average score of <b>" + averageScore + " pts</b>"
+					}
+
+					console.log("All generations average scores:");
+					console.log(context.gaData.record.generationsAverages);
+					console.log("");
+
+					context.gaData.record.currentGenerationAverage = 0;
+					context.gaData.record.bestGenerationScore = 0;
+					context.gaData.record.configBestGenerationScore = {
+						priority: 1,
+						adjacentX: -1,
+						adjacentY: -1,
+						maxTile: 0,
+						openTile: 0,
+						average: 0,
+						randomTiles: 0.17
+					};
+				}
+
+				if(context.log){
+					document.getElementById("gaTop").innerHTML = "Best individual [Generation <b>#" + context.gaData.currentGeneration + "</b>] got <b>" +
+						context.gaData.record.bestGenerationScore + " pts</b> and the <b>" + context.gaData.record.bestGenerationScoreMaxTile + " tile</b>";
+
+					document.getElementById("gaAllTimeTop").innerHTML = "All time best individual got <b>" + context.gaData.record.bestAllTimeScore + " pts</b> and the <b>" +
+						context.gaData.record.bestAllTimeScoreMaxTile + " tile</b>";
+				}
+
+				console.log("Best individual [Generation #" + context.gaData.currentGeneration + "] got " +	context.gaData.record.bestGenerationScore + " pts and the " + context.gaData.record.bestGenerationScoreMaxTile + " tile")
+				console.log(context.gaData.record.configBestGenerationScore);
+
+				console.log("All time best individual got " + context.gaData.record.bestAllTimeScore + " pts and the " +	context.gaData.record.bestAllTimeScoreMaxTile + " tile")
+				console.log(context.gaData.record.configBestAllTimeScore);
+				console.log("---------------- // ------------------");
+
+				context.gaData.limits.repeatCount = 0;
+				context.gaData.limits.lastChosen = -1;
+			}else{
+				context.toggleAIPlay();
 			}
 		}else{
-	  		if(learn){
-	  			let result = population[currentPlayer].getNextMove(gameManager.copyToSimplified());
+	  		if(context.learn){
+	  			let aiResponse = context.gaData.population[context.gaData.currentPlayer].getNextMove(context.gameManager.copyToSimplified());
 
-		  		if(result.index == lastChosen){
-		  			repeatCount++;
+		  		if(aiResponse.index == context.gaData.limits.lastChosen) context.gaData.limits.repeatCount++;
+		  		else context.gaData.limits.repeatCount = 0;
+
+		  		if(context.gaData.limits.repeatCount > 6){
+		  			context.gameManager.restart();
+		  			context.gaData.limits.repeatCount = 0;
+		  			context.gaData.limits.lastChosen = -1;
 		  		}else{
-		  			repeatCount = 0;
-		  		}
-
-		  		if(repeatCount > 100){
-		  			gameManager.restart();
-		  			repeatCount = 0;
-		  			lastChosen = -1;
-		  		}else{
-			  		lastChosen = result.index;
-
-			  		gameManager.move(result.index);
-			  		population[currentPlayer].score = gameManager.score;
+			  		context.gaData.limits.lastChosen = aiResponse.index;
+			  		context.gameManager.move(aiResponse.index);
+			  		context.gaData.population[context.gaData.currentPlayer].score = context.gameManager.score;
 		  		}
 	  		}else{
-	  			let result = provenAI[0].getNextMove(gameManager.copyToSimplified());
-
-	  			gameManager.move(result.index);
+	  			let aiResponse = context.preTrainedAI[0].getNextMove(context.gameManager.copyToSimplified());
+	  			context.gameManager.move(aiResponse.index);
 	  		}
 	  	}
-	}, 1);
+	}, this.refreshDelay);
 }

@@ -138,7 +138,7 @@ hr {
   100% {
     opacity: 1; } }
 .game-container {
-  margin-top: 40px;
+  margin-top: 10px;
   position: relative;
   padding: 15px;
   cursor: default;
@@ -517,6 +517,12 @@ hr {
   line-height: 42px;
   margin-bottom: 0; }
 
+.game-learn-info {
+  float: left;
+  font-size: 0.8rem;
+  line-height: 26px;
+  margin-bottom: 0; }
+
 .restart-button {
   display: inline-block;
   background: #8f7a66;
@@ -558,6 +564,12 @@ hr {
     margin-bottom: 10px; }
 
   .game-intro {
+    width: 55%;
+    display: block;
+    box-sizing: border-box;
+    line-height: 1.65; }
+
+  .game-learn-info {
     width: 55%;
     display: block;
     box-sizing: border-box;

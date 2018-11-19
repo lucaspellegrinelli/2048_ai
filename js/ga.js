@@ -1,21 +1,15 @@
-let numberOfIndividuals = 16;
-let minRandom = -1.0;
-let maxRandom = 1.0;
+function GA(numberOfIndividuals, tournamentSize, mutationRate){
+	this.numberOfIndividuals = numberOfIndividuals;
+	this.tournamentSize = tournamentSize;
+	this.mutationRate = mutationRate;
+}
 
-let tournamentSize = 4;
-let mutationRate = 0.05;
-
-function generateStartPopulation(defaults){
+GA.prototype.generateStartPopulation = function(defaults = []){
 	let population = [];
 
-	for(let i = 0; i < numberOfIndividuals - defaults.length; i++){
-		population.push(new AI(rFloat(minRandom, maxRandom),
-								rFloat(minRandom, maxRandom),
-								rFloat(minRandom, maxRandom),
-								rFloat(minRandom, maxRandom),
-								rFloat(minRandom, maxRandom),
-								rFloat(minRandom, maxRandom),
-								rFloat(minRandom, maxRandom)));
+	for(let i = 0; i < this.numberOfIndividuals - defaults.length; i++){
+		population.push(new AI(this.rFloat(-1.0, 1.0), this.rFloat(-1.0, 1.0), this.rFloat(-1.0, 1.0),
+			this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0)));
 	}
 
 	for(let i = 0; i < defaults.length; i++){
@@ -25,88 +19,67 @@ function generateStartPopulation(defaults){
 	return population;
 }
 
-function generateNewGeneration(oldPopulation){
+GA.prototype.generateNewGeneration = function(oldPopulation){
 	let newPopulation = [];
 
-	let fittestIndividual = getFittestIndividual(oldPopulation);
+	let fittestIndividual = this.getFittestIndividual(oldPopulation);
 	newPopulation.push(fittestIndividual);
 
 	for(let i = 1; i < oldPopulation.length; i++){
-		let firstIndv = tournamentSelection(oldPopulation);
-		let secondIndv = tournamentSelection(oldPopulation);
-		let newIndiv = crossoverIndividuals(firstIndv, secondIndv);
+		let firstIndv = this.tournamentSelection(oldPopulation);
+		let secondIndv = this.tournamentSelection(oldPopulation);
+		let newIndiv = this.crossoverIndividuals(firstIndv, secondIndv);
 		newPopulation.push(newIndiv);
 	}
 
 	for (let i = 1; i < newPopulation.length; i++) {
-		newPopulation[i] = mutate(newPopulation[i], mutationRate);
+		newPopulation[i] = this.mutate(newPopulation[i], mutationRate);
   }
 
   return newPopulation;
 }
 
-function tournamentSelection(population) {
+GA.prototype.tournamentSelection = function(population){
 	let tournamentPopulation = [];
 
-	for (let i = 0; i < tournamentSize; i++) {
+	for (let i = 0; i < this.tournamentSize; i++) {
     let index = Math.trunc(Math.random() * population.length);
     tournamentPopulation.push(population[index]);
   }
 
-	let fittest = getFittestIndividual(tournamentPopulation);
+	let fittest = this.getFittestIndividual(tournamentPopulation);
 	return fittest;
 }
 
-function crossoverIndividuals(firstIndividual, secondIndividual) {
-    let priorityCrossed = (Math.random() <= 0.5) ? firstIndividual.priorityWeight : secondIndividual.priorityWeight;
-    let adjecentXCrossed = (Math.random() <= 0.5) ? firstIndividual.adjacentXWeight : secondIndividual.adjacentXWeight;
-		let adjecentYCrossed = (Math.random() <= 0.5) ? firstIndividual.adjacentYWeight : secondIndividual.adjacentYWeight;
-    let maxTileCrossed = (Math.random() <= 0.5) ? firstIndividual.maxTileWeight : secondIndividual.maxTileWeight;
-    let openTilesCrossed = (Math.random() <= 0.5) ? firstIndividual.openTilesWeight : secondIndividual.openTilesWeight;
-    let averageCrossed = (Math.random() <= 0.5) ? firstIndividual.averageWeight : secondIndividual.averageWeight;
-    let randomTileCrossed = (Math.random() <= 0.5) ? firstIndividual.randomTiles : secondIndividual.randomTiles;
+GA.prototype.crossoverIndividuals = function(first, second){
+	let priorityCrossed = (Math.random() <= 0.5) ? first.priorityWeight : second.priorityWeight;
+  let adjecentXCrossed = (Math.random() <= 0.5) ? first.adjacentXWeight : second.adjacentXWeight;
+	let adjecentYCrossed = (Math.random() <= 0.5) ? first.adjacentYWeight : second.adjacentYWeight;
+  let maxTileCrossed = (Math.random() <= 0.5) ? first.maxTileWeight : second.maxTileWeight;
+  let openTilesCrossed = (Math.random() <= 0.5) ? first.openTilesWeight : second.openTilesWeight;
+  let averageCrossed = (Math.random() <= 0.5) ? first.averageWeight : second.averageWeight;
+  let randomTileCrossed = (Math.random() <= 0.5) ? first.randomTiles : second.randomTiles;
 
-    return new AI(priorityCrossed, adjecentXCrossed, adjecentYCrossed, maxTileCrossed, openTilesCrossed, averageCrossed, randomTileCrossed);
+  return new AI(priorityCrossed, adjecentXCrossed, adjecentYCrossed, maxTileCrossed, openTilesCrossed, averageCrossed, randomTileCrossed);
 }
 
-function mutate(indidual, mutation){
-	let priority = (Math.random() <= mutationRate) ? mutationFunction(indidual.priorityWeight) : indidual.priorityWeight;
-	let adjecentX = (Math.random() <= mutationRate) ? mutationFunction(indidual.adjacentXWeight) : indidual.adjacentXWeight;
-	let adjecentY = (Math.random() <= mutationRate) ? mutationFunction(indidual.adjacentYWeight) : indidual.adjacentYWeight;
-	let maxTile = (Math.random() <= mutationRate) ? mutationFunction(indidual.maxTileWeight) : indidual.maxTileWeight;
-	let openTiles = (Math.random() <= mutationRate) ? mutationFunction(indidual.openTilesWeight) : indidual.openTilesWeight;
-	let average = (Math.random() <= mutationRate) ? mutationFunction(indidual.averageWeight) : indidual.averageWeight;
-	let randomTile = (Math.random() <= mutationRate) ? mutationFunction(indidual.randomTiles) : indidual.randomTiles;
+GA.prototype.mutate = function(individual){
+	let priority = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.priorityWeight) : individual.priorityWeight;
+	let adjecentX = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.adjacentXWeight) : individual.adjacentXWeight;
+	let adjecentY = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.adjacentYWeight) : individual.adjacentYWeight;
+	let maxTile = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.maxTileWeight) : individual.maxTileWeight;
+	let openTiles = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.openTilesWeight) : individual.openTilesWeight;
+	let average = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.averageWeight) : individual.averageWeight;
+	let randomTile = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.randomTiles) : individual.randomTiles;
 
 	return new AI(priority, adjecentX, adjecentY, maxTile, openTiles, average, randomTile);
 }
 
-function mutateMatrix(matrix){
-	for(let i = 0; i < matrix.length; i++){
-		for(let j = 0; j < matrix[0].length; j++){
-			matrix[i][j] += rFloat(-0.3, 0.3);
-
-			if(matrix[i][j] > 1)
-				matrix[i][j] = 1;
-			else if(matrix[i][j] < -1)
-				matrix[i][j] = -1
-		}
-	}
-
-	return matrix;
+GA.prototype.mutationFunction = function(oldValue){
+	return this.rFloat(-1.0, 1.0);
 }
 
-function mutationFunction(oldValue){
-	oldValue += rFloat(-0.3, 0.3);
-
-	if(oldValue > 1)
-		return 1;
-	else if(oldValue < -1)
-		return -1
-	else return oldValue;
-}
-
-function getFittestIndividual(population){
+GA.prototype.getFittestIndividual = function(population){
 	let bestScore = 0;
 	let bestScoreIndex = -1;
 
@@ -120,6 +93,6 @@ function getFittestIndividual(population){
 	return population[bestScoreIndex];
 }
 
-function rFloat(min, max) {
+GA.prototype.rFloat = function(min, max) {
   return Math.random() * (max - min) + min;
 }
