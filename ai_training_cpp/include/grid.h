@@ -8,6 +8,9 @@
 #include "tile.h"
 
 class Grid{
+private:
+  int maxTile;
+  
 public:
   int size;
   std::vector<std::vector<Tile>> cells;

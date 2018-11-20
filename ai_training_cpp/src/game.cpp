@@ -6,6 +6,7 @@ Game::Game(int size){
   this->size = size;
   this->startTiles = 2;
   this->setup();
+  this->initializeTraversals();
 }
 
 void Game::restart(){
@@ -109,18 +110,33 @@ Position Game::getVector(int direction){
   else return Position(-1, 0);
 }
 
-std::pair<std::vector<int>, std::vector<int>> Game::buildTraversals(Position vector){
-  std::pair<std::vector<int>, std::vector<int>> traversals;
+void Game::initializeTraversals(){
+  std::pair<std::vector<int>, std::vector<int>> traversal;
 
   for(int pos = 0; pos < this->size; pos++){
-    traversals.first.push_back(pos);
-    traversals.second.push_back(pos);
+    traversal.first.push_back(pos);
+    traversal.second.push_back(pos);
   }
 
-  if(vector.x == 1) std::reverse(traversals.first.begin(), traversals.first.end());
-  if(vector.y == 1) std::reverse(traversals.second.begin(), traversals.second.end());
+  this->traversals.push_back(traversal); // (n, n)
+  std::reverse(traversal.first.begin(), traversal.first.end());
+  this->traversals.push_back(traversal); // (i, n)
+  std::reverse(traversal.second.begin(), traversal.second.end());
+  this->traversals.push_back(traversal); // (i, i)
+  std::reverse(traversal.first.begin(), traversal.first.end());
+  this->traversals.push_back(traversal); // (n, i)
+}
 
-  return traversals;
+std::pair<std::vector<int>, std::vector<int>> Game::buildTraversals(Position vector){
+  if(vector.x == 1 && vector.y == 1){ // (i, i)
+    return this->traversals[2];
+  }else if(vector.x == 1 && vector.y == 0){ // (i, n)
+    return this->traversals[1];
+  }else if(vector.x == 0 && vector.y == 1){ // (n, i)
+    return this->traversals[3];
+  }else{ // (n, n)
+    return this->traversals[0];
+  }
 }
 
 std::pair<Position, Position> Game::findFarthestPosition(Position cell, Position vector){

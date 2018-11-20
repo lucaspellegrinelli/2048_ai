@@ -5,16 +5,19 @@
 Grid::Grid(){
   this->size = 0;
   this->cells = this->empty();
+  this->maxTile = 0;
 }
 
 Grid::Grid(int size){
   this->size = size;
   this->cells = this->empty();
+  this->maxTile = 0;
 }
 
 Grid::Grid(int size, std::vector<std::vector<Tile>> previousState){
   this->size = size;
   this->cells = this->fromState(previousState);
+  this->maxTile = 0;
 }
 
 std::vector<std::vector<Tile>> Grid::empty(){
@@ -91,6 +94,8 @@ Tile Grid::cellContent(Position cell){
 
 void Grid::insertTile(Tile tile){
   this->cells[tile.position.x][tile.position.y] = Tile(Position(tile.position.x, tile.position.y), tile.value);
+  this->cells[tile.position.x][tile.position.y].mergedFrom = tile.mergedFrom;
+  if(tile.value > this->maxTile) this->maxTile = tile.value;
 }
 
 void Grid::removeTile(Tile tile){
@@ -129,15 +134,7 @@ bool Grid::isGridEqual(Grid other){
 }
 
 int Grid::getMaxTile(){
-  int maxTile = 0;
-  for(int i = 0; i < this->size; i++){
-    for(int j = 0; j < this->size; j++){
-      int thisCellValue = this->cells[i][j].value;
-      if(thisCellValue > maxTile) maxTile = thisCellValue;
-    }
-  }
-
-  return maxTile;
+  return this->maxTile;
 }
 
 void Grid::print(){
@@ -148,4 +145,5 @@ void Grid::print(){
     }
     std::cout << std::endl;
   }
+  std::cout << std::endl;
 }

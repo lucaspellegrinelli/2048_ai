@@ -13,6 +13,7 @@ private:
   int size;
   int startTiles;
   bool won;
+  std::vector<std::pair<std::vector<int>, std::vector<int>>> traversals;
 
 public:
   Grid grid;
@@ -29,6 +30,7 @@ public:
   void moveTile(Tile tile, Position cell);
   void move(int direction);
   Position getVector(int direction);
+  void initializeTraversals();
   std::pair<std::vector<int>, std::vector<int>> buildTraversals(Position vector);
   std::pair<Position, Position> findFarthestPosition(Position cell, Position vector);
   bool movesAvailable();

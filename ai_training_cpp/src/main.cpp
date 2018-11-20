@@ -6,7 +6,7 @@
 #include "ai.h"
 #include "ga.h"
 
-#define POPULATION_SIZE 64
+#define POPULATION_SIZE 32
 #define TOURNAMENT_SIZE 4
 #define MUTATION_RATE 0.05
 
@@ -70,6 +70,8 @@ void letAIPlay(){
       currentGenerationAverage += game.score;
 
       std::cout << "Individual #" << (currentPlayer + 1) << "/" << POPULATION_SIZE << " [Generation #" << currentGeneration << "] got " << game.score << " pts and the " << game.grid.getMaxTile() << " tile" << std::endl;
+
+      game.grid.print();
 
       game.restart();
 
