@@ -29,6 +29,10 @@ std::vector<AI> GA::generateStartPopulation(){
 std::vector<AI> GA::generateStartPopulation(std::vector<AI> defaults){
   std::vector<AI> population;
 
+  for(int i = 0; i < (int)defaults.size(); i++){
+    population.push_back(defaults[i]);
+  }
+
   for(int i = 0; i < (int)(this->numberOfIndividuals - defaults.size()); i++){
     AI ai(rFloat(this->minRandom, this->maxRandom),
           rFloat(this->minRandom, this->maxRandom),
@@ -39,10 +43,6 @@ std::vector<AI> GA::generateStartPopulation(std::vector<AI> defaults){
           rFloat(this->minRandom, this->maxRandom));
 
     population.push_back(ai);
-  }
-
-  for(int i = 0; i < (int)defaults.size(); i++){
-    population.push_back(defaults[i]);
   }
 
   return population;

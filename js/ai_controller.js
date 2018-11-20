@@ -10,7 +10,7 @@ function AIController(learn, log){
 	this.refreshDelay = 1;
 
 	this.preTrainedAI = [
-		new AI(1, 0.35, 0.4, 0.1, 0.08, 0, 0.17)
+		new AI(1, 0, 0, 0, 0, 0, 0)
 	];
 
 	this.gaConfig = {
@@ -149,20 +149,11 @@ AIController.prototype.letAIPlay = function(){
 	  				randomTiles: context.gaData.population[context.gaData.currentPlayer].randomTiles
 	  			};
 
-					let maxTile = 0;
-					for(let i = 0; i < context.gameManager.grid.size; i++){
-						for(let j = 0; j < context.gameManager.grid.size; j++){
-							let thisCell = context.gameManager.grid.cells[i][j];
-							let thisCellValue = thisCell ? thisCell.value : 0;
-							if(thisCellValue > maxTile) maxTile = thisCellValue;
-						}
-					}
-
-					context.gaData.record.bestGenerationScoreMaxTile = maxTile;
+					context.gaData.record.bestGenerationScoreMaxTile = context.gameManager.grid.getMaxTile();
 
 					if(context.gameManager.score > context.gaData.record.bestAllTimeScore){
 						context.gaData.record.bestAllTimeScore = context.gameManager.score;
-						context.gaData.record.bestAllTimeScoreMaxTile = maxTile;
+						context.gaData.record.bestAllTimeScoreMaxTile = context.gameManager.grid.getMaxTile();
 						context.gaData.record.configBestAllTimeScore = {
 		  				priority: 	 context.gaData.population[context.gaData.currentPlayer].priorityWeight,
 		  				adjacentX: 	 context.gaData.population[context.gaData.currentPlayer].adjacentXWeight,
@@ -175,14 +166,14 @@ AIController.prototype.letAIPlay = function(){
 					}
 	  		}
 
-		  	context.gaData.record.generationAverage += context.gameManager.score;
+		  	context.gaData.record.currentGenerationAverage += context.gameManager.score;
 
 				if(context.log){
-					document.getElementById("gaProgress").innerHTML = "Individual <b>#" + context.gaData.currentPlayer + "/" + context.gaConfig.populationSize +
-						"</b> [Generation <b>#" + context.gaData.currentGeneration + "</b>] got <b>" + context.gameManager.score + " pts</b> and the <b>" + context.gaData.record.bestGenerationScoreMaxTile + " tile</b>";
+					document.getElementById("gaProgress").innerHTML = "Individual <b>#" + (context.gaData.currentPlayer + 1) + "/" + context.gaConfig.populationSize +
+						"</b> [Generation <b>#" + context.gaData.currentGeneration + "</b>] got <b>" + context.gameManager.score + " pts</b> and the <b>" + context.gameManager.grid.getMaxTile() + " tile</b>";
 				}
 
-				console.log("Individual #" + context.gaData.currentPlayer + "/" + context.gaConfig.populationSize + " [Generation #" + context.gaData.currentGeneration + "] got " + context.gameManager.score + " pts and the " + context.gaData.record.bestGenerationScoreMaxTile + " tile");
+				console.log("Individual #" + (context.gaData.currentPlayer + 1) + "/" + context.gaConfig.populationSize + " [Generation #" + context.gaData.currentGeneration + "] got " + context.gameManager.score + " pts and the " + context.gaData.record.bestGenerationScoreMaxTile + " tile");
 
 				context.gameManager.restart();
 
@@ -193,7 +184,7 @@ AIController.prototype.letAIPlay = function(){
 					context.gaData.currentGeneration++;
 					context.gaData.population = context.ga.generateNewGeneration(context.gaData.population);
 
-					let averageScore = context.gaData.record.currentGenerationAverage / context.gaData.population.length;
+					let averageScore = context.gaData.record.currentGenerationAverage / context.gaConfig.populationSize;
 
 					context.gaData.record.generationsAverages.push(averageScore);
 

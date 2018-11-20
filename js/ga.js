@@ -7,13 +7,13 @@ function GA(numberOfIndividuals, tournamentSize, mutationRate){
 GA.prototype.generateStartPopulation = function(defaults = []){
 	let population = [];
 
+	for(let i = 0; i < defaults.length; i++){
+		population.push(defaults[i]);
+	}
+
 	for(let i = 0; i < this.numberOfIndividuals - defaults.length; i++){
 		population.push(new AI(this.rFloat(-1.0, 1.0), this.rFloat(-1.0, 1.0), this.rFloat(-1.0, 1.0),
 			this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0)));
-	}
-
-	for(let i = 0; i < defaults.length; i++){
-		population.push(defaults[i]);
 	}
 
 	return population;
@@ -33,7 +33,7 @@ GA.prototype.generateNewGeneration = function(oldPopulation){
 	}
 
 	for (let i = 1; i < newPopulation.length; i++) {
-		newPopulation[i] = this.mutate(newPopulation[i], mutationRate);
+		newPopulation[i] = this.mutate(newPopulation[i]);
   }
 
   return newPopulation;

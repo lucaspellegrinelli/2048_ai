@@ -37,7 +37,7 @@ void letAIPlay(){
   std::vector<double> genAverages;
 
   Game game;
-  
+
   GA ga(POPULATION_SIZE, TOURNAMENT_SIZE, MUTATION_RATE);
 
   std::vector<AI> population = ga.generateStartPopulation();
@@ -83,7 +83,7 @@ void letAIPlay(){
       generationAverage += game.score;
 
       std::cout << "Individual #" << currentPlayer << " made " << game.score << " points" << std::endl;
-      std::cout << "----------------- // ------------------" << std::endl << std::endl;
+      std::cout << std::endl << "----------------- // ------------------" << std::endl << std::endl;
 
       game.restart();
 

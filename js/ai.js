@@ -30,24 +30,9 @@ AI.prototype.getNextMove = function(gameManager, depth = this.searchDepth){
 			continue;
 
 		let heuristic = -1;
-		if(true){
-			for(let j = 0; j < Math.floor(this.randomTiles * 6); j++)
-				thisMoves.addRandomTile();
+		for(let j = 0; j < Math.floor(this.randomTiles * 6); j++) thisMoves.addRandomTile();
 
-			heuristic = this.getGridScore(thisMoves.grid);
-		}else{
-			for(let x = 0; x < 4; x++){
-				if(!thisMoves.grid[x]) thisMoves.grid[x] = [null, null, null, null];
-				for(let y = 0; y < 4; y++){
-					if(thisMoves.grid[x][y] === null || thisMoves.grid[x][y] === undefined){
-						thisMoves.grid[x][y] = new Tile({x: x, y: y}, 2);
-						let thisHeuristic = this.getGridScore(thisMoves.grid);
-						if(thisHeuristic < heuristic || heuristic == -1) heuristic = thisHeuristic;
-						thisMoves.grid[x][y] = null;
-					}
-				}
-			}
-		}
+		heuristic = this.getGridScore(thisMoves.grid);
 
 		if(depth > 0){
 			let resultHeuristic = this.getNextMove(thisMoves, depth - 1);

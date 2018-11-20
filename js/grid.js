@@ -160,3 +160,16 @@ Grid.prototype.isGridEqual = function(other){
 
   return true;
 }
+
+Grid.prototype.getMaxTile = function(){
+  let maxTile = 0;
+  for(let i = 0; i < this.size; i++){
+    for(let j = 0; j < this.size; j++){
+      let thisCell = this.cells[i][j];
+      let thisCellValue = thisCell ? thisCell.value : 0;
+      if(thisCellValue > maxTile) maxTile = thisCellValue;
+    }
+  }
+
+  return maxTile;
+}
