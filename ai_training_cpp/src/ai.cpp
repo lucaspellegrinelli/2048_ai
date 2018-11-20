@@ -40,9 +40,8 @@ Move AI::getNextMove(Game snapshot, int depth){
     Game thisMoves = snapshot.copy();
     thisMoves.move(i);
 
-    if(!thisMoves.moved){
-      continue;
-    }
+    if(thisMoves.grid.isGridEqual(snapshot.grid))
+			continue;
 
     double heuristic = -1;
 
@@ -105,7 +104,7 @@ double AI::getGridScore(Grid grid){
 			};
 
 			for(int i = 0; i < 4; i++){
-				if(grid.withinBounds(vectors[i][0], vectors[i][1])){
+				if(grid.withinBounds(Position(vectors[i][0], vectors[i][1]))){
 					int thisLoopCellValue = grid.cells[vectors[i][0]][vectors[i][1]].value;
 
 					if(i <= 1){

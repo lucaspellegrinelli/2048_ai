@@ -22,7 +22,7 @@ function AIController(learn, log){
 	this.ga = new GA(this.gaConfig.populationSize, this.gaConfig.tournamentSize, this.gaConfig.mutationRate);
 
 	this.gaData = {
-		population: this.ga.generateStartPopulation(), // this.ga.generateStartPopulation(preTrainedAI)
+		population: this.ga.generateStartPopulation(),
 		currentPlayer: 0,
 		currentGeneration: 0,
 		record: {
@@ -38,7 +38,18 @@ function AIController(learn, log){
 				randomTiles: 0.17
 			},
 			currentGenerationAverage: 0,
-			generationsAverages: []
+			generationsAverages: [],
+			bestAllTimeScore: 0,
+			bestAllTimeScoreMaxTile: 0,
+			configBestAllTimeScore: {
+				priority: 1,
+				adjacentX: -1,
+				adjacentY: -1,
+				maxTile: 0,
+				openTile: 0,
+				average: 0,
+				randomTiles: 0.17
+			},
 		},
 		limits: {
 			lastChosen: -1,
@@ -173,7 +184,7 @@ AIController.prototype.letAIPlay = function(){
 						"</b> [Generation <b>#" + context.gaData.currentGeneration + "</b>] got <b>" + context.gameManager.score + " pts</b> and the <b>" + context.gameManager.grid.getMaxTile() + " tile</b>";
 				}
 
-				console.log("Individual #" + (context.gaData.currentPlayer + 1) + "/" + context.gaConfig.populationSize + " [Generation #" + context.gaData.currentGeneration + "] got " + context.gameManager.score + " pts and the " + context.gaData.record.bestGenerationScoreMaxTile + " tile");
+				console.log("Individual #" + (context.gaData.currentPlayer + 1) + "/" + context.gaConfig.populationSize + " [Generation #" + context.gaData.currentGeneration + "] got " + context.gameManager.score + " pts and the " + context.gameManager.grid.getMaxTile() + " tile");
 
 				context.gameManager.restart();
 

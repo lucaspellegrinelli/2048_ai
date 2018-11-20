@@ -9,6 +9,8 @@ all: main
 
 game:
 	@mkdir -p build/game/
+	$(CC) $(CFLAGS) -c src/random_util.cpp -o build/random_util.o
+	$(CC) $(CFLAGS) -c src/position.cpp -o build/position.o
 	$(CC) $(CFLAGS) -c src/tile.cpp -o build/tile.o
 	$(CC) $(CFLAGS) -c src/grid.cpp -o build/grid.o
 	$(CC) $(CFLAGS) -c src/move.cpp -o build/move.o

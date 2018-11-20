@@ -117,7 +117,7 @@ Grid.prototype.serialize = function () {
 };
 
 Grid.prototype.clone = function(){
-  var newGrid = new Grid(4, null);
+  var newGrid = new Grid(this.size, null);
   newGrid.empty();
 
   for(var i = 0; i < this.size; i++){

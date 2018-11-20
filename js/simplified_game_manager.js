@@ -169,7 +169,7 @@ SimplifiedGameManager.prototype.positionsEqual = function (first, second) {
 };
 
 SimplifiedGameManager.prototype.copyToSimplified = function(){
-  var newGameManager = new SimplifiedGameManager(4);
+  var newGameManager = new SimplifiedGameManager(this->size);
   newGameManager.grid = this.grid.clone();
 
   return newGameManager;
