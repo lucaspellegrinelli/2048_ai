@@ -12,8 +12,7 @@ GA.prototype.generateStartPopulation = function(defaults = []){
 	}
 
 	for(let i = 0; i < this.numberOfIndividuals - defaults.length; i++){
-		population.push(new AI(this.rFloat(-1.0, 1.0), this.rFloat(-1.0, 1.0), this.rFloat(-1.0, 1.0),
-			this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0),	this.rFloat(-1.0, 1.0)));
+		population.push(new AI());
 	}
 
 	return population;
@@ -52,27 +51,23 @@ GA.prototype.tournamentSelection = function(population){
 }
 
 GA.prototype.crossoverIndividuals = function(first, second){
-	let priorityCrossed = (Math.random() <= 0.5) ? first.priorityWeight : second.priorityWeight;
-  let adjecentXCrossed = (Math.random() <= 0.5) ? first.adjacentXWeight : second.adjacentXWeight;
-	let adjecentYCrossed = (Math.random() <= 0.5) ? first.adjacentYWeight : second.adjacentYWeight;
-  let maxTileCrossed = (Math.random() <= 0.5) ? first.maxTileWeight : second.maxTileWeight;
-  let openTilesCrossed = (Math.random() <= 0.5) ? first.openTilesWeight : second.openTilesWeight;
-  let averageCrossed = (Math.random() <= 0.5) ? first.averageWeight : second.averageWeight;
-  let randomTileCrossed = (Math.random() <= 0.5) ? first.randomTiles : second.randomTiles;
+	let newWeights = []
 
-  return new AI(priorityCrossed, adjecentXCrossed, adjecentYCrossed, maxTileCrossed, openTilesCrossed, averageCrossed, randomTileCrossed);
+	for(let i = 0; i < first.weights.length; i++){
+		newWeights.push((Math.random() <= 0.5) ? first.weights[i] : second.weights[i]);
+	}
+
+  return new AI(newWeights);
 }
 
 GA.prototype.mutate = function(individual){
-	let priority = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.priorityWeight) : individual.priorityWeight;
-	let adjecentX = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.adjacentXWeight) : individual.adjacentXWeight;
-	let adjecentY = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.adjacentYWeight) : individual.adjacentYWeight;
-	let maxTile = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.maxTileWeight) : individual.maxTileWeight;
-	let openTiles = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.openTilesWeight) : individual.openTilesWeight;
-	let average = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.averageWeight) : individual.averageWeight;
-	let randomTile = (Math.random() <= this.mutationRate) ? this.mutationFunction(individual.randomTiles) : individual.randomTiles;
+	let newWeights = []
 
-	return new AI(priority, adjecentX, adjecentY, maxTile, openTiles, average, randomTile);
+	for(let i = 0; i < first.weights.length; i++){
+		newWeights.push((Math.random() <= this.mutationRate) ? this.mutationFunction(individual.weights[i]) : individual.weights[i]);
+	}
+
+	return new AI(newWeights);
 }
 
 GA.prototype.mutationFunction = function(oldValue){
