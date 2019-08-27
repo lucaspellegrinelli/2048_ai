@@ -63,7 +63,7 @@ GA.prototype.crossoverIndividuals = function(first, second){
 GA.prototype.mutate = function(individual){
 	let newWeights = []
 
-	for(let i = 0; i < first.weights.length; i++){
+	for(let i = 0; i < individual.weights.length; i++){
 		newWeights.push((Math.random() <= this.mutationRate) ? this.mutationFunction(individual.weights[i]) : individual.weights[i]);
 	}
 

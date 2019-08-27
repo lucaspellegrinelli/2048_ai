@@ -110,12 +110,14 @@ AIController.prototype.cleanLog = function(){
 AIController.prototype.playerDropdown = function(text, player){
 	let indv_vars = "";
 
-	let weightsLabels = ["Priority", "Adjacent X", "Adjacent Y", "Max Tile",
-											"Open Tiles", "Average"];
+	let weightsLabels = []
 
-	for(let i = 0; i < player.weights.length; i++){
-		let val = player == undefined ? "None" : player.weights[i].toFixed(5);
-		indv_vars += '<p><b>' + weightsLabels[i] + ':</b> ' + val + '</p>';
+	if(player != undefined && player.weights != undefined){
+		for(let i = 0; i < player.weights.length; i++){
+			let val = player.weights[i].toFixed(5);
+			let label =  weightsLabels[i] ?  weightsLabels[i] : "Weight #" + (i + 1);
+			indv_vars += '<p><b>' + label + ':</b> ' + val + '</p>';
+		}
 	}
 
 	return '<div class="dropdown"><span>' + text + '</span><div class="dropdown-content">' + indv_vars + '</div></div>';
