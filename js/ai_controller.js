@@ -10,7 +10,7 @@ function AIController(learn, log){
 	this.refreshDelay = 1;
 
 	this.preTrainedAI = [
-		new AI([0.55, -0.82, 0.61, 0.73, -0.34, 0.00])
+		new AI() // Random AI
 	];
 
 	this.gaConfig = {

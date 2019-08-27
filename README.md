@@ -2,10 +2,6 @@
 
 This is my take on making an artificial intelligence for the game 2048 made by Gabriele Cirulli (you can play the game [```here```](https://gabrielecirulli.github.io/2048/)).
 
-This uses minimax and the fitness function is a mess. I defined loads of parameters from the game like number of blank spaces, biggest tile, how close it is to a tile configuration I said it's the optimal, average value of tiles... But instead of me saying how much each of these variables are worth, I have a Genetic Algorithm to check this for me.
+There are two approaches to the problem in this project. The first one is in the [```ai.js```](https://github.com/lucaspellegrinelli/2048_ai/blob/master/js/ai.js) which uses minimax and a heuristic function that is some random variables extracted from the game (like the biggest tile, how close it is to a specific configuration and others) weighted by values defined by a genetic algorithm. This approch was the first one I had (and probably the most effective). Its can usually get 4096, but I've seen it get 8192 and even 16384.
 
-The best tile it got was 16384 but only once ever. Someeeeetimes it gets 8192, 4092 is kinda common and 2048 is almost always. (I'm saying this about one of the trained AI's I had, if you put a random one to play it will obviously fail before 512).
-
-To check the AI's parameters of some pre-trained bots, you can check the "ai_controller.js" file and on line ~31 I have some commented code with some of the AIs that did best overnight or something like that.
-
-PS. IF YOU WANT TO TEST ONE PRE-TRAINED AI, SET THE VARIABLE "learn" IN ai_controller.js TO FALSE, OR ELSE IT WILL START TRAINING OTHER BOTS.
+The other approach that can be found in [```ai_conv.js```](https://github.com/lucaspellegrinelli/2048_ai/blob/master/js/ai_conv.js) also uses minimax to choose its moves but instead of using that heuristic, I simulated something like a convolutional neural network, where I made several convolutions in the game board until I got only a 1x1 matrix, and its remaining value is the output of how good that board is. It isn't exactly a neural network since I still use a genetic algorithm to optimize the weights instead of backpropagation, but the ideia is almost there. This approach isn't as good as the other one right now, maybe with more training and some reworks in the network eventually it can get somewhere. By the way, I didn't want to use a proper neural network for this since this is just a fun project that I want to mess around with possibilities.
